@@ -1,0 +1,16 @@
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\bin\Debug\Source.dll
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\bin\Debug\Source.pdb
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\bin\Debug\BouncyCastle.Crypto.dll
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\bin\Debug\ICSharpCode.SharpZipLib.dll
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\bin\Debug\NativeUI.dll
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\bin\Debug\ScriptHookVDotNet2.dll
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\bin\Debug\BouncyCastle.Crypto.xml
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\bin\Debug\ICSharpCode.SharpZipLib.pdb
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\bin\Debug\ICSharpCode.SharpZipLib.xml
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\bin\Debug\NativeUI.xml
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\bin\Debug\ScriptHookVDotNet2.xml
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\obj\Debug\EliteMenu.csprojAssemblyReference.cache
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\obj\Debug\EliteMenu.csproj.CoreCompileInputs.cache
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\obj\Debug\EliteMenu.csproj.CopyComplete
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\obj\Debug\Source.dll
+C:\Users\trebo\source\repos\EliteModMenu\GTAModMenu\obj\Debug\Source.pdb

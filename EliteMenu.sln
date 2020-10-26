@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30406.217
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EliteMenu", "GTAModMenu\EliteMenu.csproj", "{2BC16F38-0DC6-421F-9C7E-48844C43B8D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EliteMenu", "Source\EliteMenu.csproj", "{2BC16F38-0DC6-421F-9C7E-48844C43B8D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
