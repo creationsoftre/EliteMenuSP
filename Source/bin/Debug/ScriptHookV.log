@@ -1,5 +1,5 @@
 // GTA V SCRIPT HOOK (build Sep 12 2020, v1.0.2060.1)
 //     (C) Alexander Blade 2015-2020
-[07:38:33] INIT: Started
-[07:38:33] INIT: Success, game version is VER_1_0_2060_1_STEAM
-[07:38:34] INIT: Registering script 'ScriptHookVDotNet.asi' (0x00007FFD7E481480)
+[06:10:39] INIT: Started
+[06:10:39] INIT: Success, game version is VER_1_0_2060_1_STEAM
+[06:10:39] INIT: Registering script 'ScriptHookVDotNet.asi' (0x00007FF8F0321480)

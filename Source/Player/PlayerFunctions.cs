@@ -102,6 +102,23 @@ partial class PlayerFunctions : Script
         MainMenu.DisplayMessage("Invincibility", IsPlayerInvincible);
     }
 
+    internal static void Invisibility()
+    {
+        Ped Player = Game.Player.Character;
+
+
+        if (Player.Exists() && Player.IsAlive)
+        {
+      
+            Player.IsVisible = !Player.IsVisible;
+
+        }
+        else
+        {
+            Player.IsVisible = !Player.IsVisible;
+        }
+    }
+
     internal static void SuperJump()
     {
         CanPlayerSuperJump = !CanPlayerSuperJump;

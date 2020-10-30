@@ -14,6 +14,7 @@ partial class MainMenu : Script
 
 
 
+
     private void EliteWeaponsMenu()
     {
         weaponsMenu = modMenuPool.AddSubMenu(mainMenu, "Weapons");
@@ -312,7 +313,6 @@ partial class MainMenu : Script
             {"COMPONENT_ASSAULTSMG_CLIP_02","Extended Clip"},
             {"COMPONENT_ASSAULTSMG_VARMOD_LOWRIDER","Yusuf Amir Luxury Finish"},
             #endregion
-
 
             #region SMG MKII
             {"COMPONENT_SMG_MK2_CLIP_01","Default Clip"},
@@ -627,7 +627,6 @@ partial class MainMenu : Script
         {"Orange", 6}, {"Platinum", 7}
     };
 
-
         //Exclude 'Unarmed from Menu' -- future proofed 
         List<WeaponHash> weaponsToExclude = new List<WeaponHash>()
         {
@@ -677,12 +676,109 @@ partial class MainMenu : Script
 
         Dictionary<string, UInt32> weaponCategoriesDict = new Dictionary<string, UInt32>()
         {
-            {"Melee", 2685387236}, {"Handguns", 416676503}, {"Submachine Guns", 3337201093}, {"Shotguns", 860033945}, {"Assault Rifles", 970310034},
-            {"Light Machine Guns", 1159398588}, {"Sniper Rifles",3082541095}, {"Heavy Weapons", 2725924767}, {"Throwables", 1548507267},
-            {"Miscellaneous", 4257178988}
+            {"Melee", 3566412244}, {"Handguns", 416676503}, {"Submachine Guns", 3337201093}, {"Shotguns", 860033945}, {"Assault Rifles", 970310034},
+            {"Light Machine Guns", 1159398588}, {"Sniper Rifles",3082541095}, {"Heavy Weapons", 2725924767}, {"Throwables", 1548507267}, {"Fluid Canister", 1595662460},
+            {"Miscellaneous", 4257178988},
         };
 
+        Dictionary<UInt32, string> weaponNamesDict = new Dictionary<UInt32, string>()
+        {
+            {0xAF113F99, "Advanced Rifle "},
+            {0x22D8FE39,"AP Pistol "},
+            {0xBFEFFF6D,"Assault Rifle "},
+            {0x394F415C,"Assault Rifle MK II"},
+            {0xE284C527,"Assault Shotgun"},
+            {0xEFE7E2DF,"Assault SMG"},
+            {0x12E82D3D, "Auto Shotgun"},
+            {0x958A4A8F,"Bat"},
+            {0x23C9F95C,"Baseball"},
+            {0xCD274149,"Battle Axe"},
+            {0xF9E6AA4B,"Bottle"},
+            {0x7F229F94,"Bullpup Rifle"},
+            {0x84D6FAFD,"Bullpup Rifle MK II"},
+            {0x9D61E50F,"Bullpup Shotgun"},
+            {0xA0973D5E, "BZ Gas"},
+            {0x83BF0278,"Carbine Rifle"},
+            {0xFAD1F1C9,"Carbine Rifle MK II"},
+            {0x7FD62962,"Combat MG"},
+            {0xDBBD7280,"Combat MG MKII"},
+            {0xA3D4D34,"Combat PDW"},
+            {0x5EF9FEC4,"Combat Pistol"},
+            {0x781FE4A,"Compact Launcher"},
+            {0x624FE830,"Compact Rifle"},
+            {0x84BD7BFD, "Crowbar"},
+            {0x92A27487,"Antique Cavalry Dagger"},
+            {0xEF951FBB,"Double Barrel Shotgun"},
+            {0x97EA20B8,"Double Action Revolver"},
+            {0x60EC506,"Fire Extinguisher"},
+            {0x7F7497E5,"Firework Launcher"},
+            {0x497FACC3, "Flare"},
+            {0x47757124,"Flare Gun"},
+            {0x8BB05FD7,"Flash Light"},
+            {0x440E4788,"Golf Club"},
+            {0x93E220BD, "Grenade"},
+            {0xA284510B,"Grenade Launcher"},
+            {0x61012683,"Gusenberg Sweeper"},
+            {0x4E875F73,"Hammer"},
+            {0xF9DCBF2D, "Hatchet"},
+            {0xD205520E, "Heavy Pistol"},
+            {0x3AABBBAA,"Heavy Shotgun"},
+            {0xC472FE2, "Heavy Sniper"},
+            {0xA914799,"Heavy Sniper MK II"},
+            {0x63AB0442,"Homing Launcher"},
+            {0x99B507EA, "Knife"},
+            {0xD8DF3C3C, "Brass Knuckles"},
+            {0xDD5DF8D9, "Machete"},
+            {0xDB1AA450, "Machine Pistol"},
+            {0xDC4DB296,"Marksman Pistol"},
+            {0xC734385A, "Marksman Rifle"},
+            {0x6A6C02E0,"Marksman Rifle MK II"},
+            {0x9D07F764,"MG"},
+            {0x13532244,"Micro SMG"},
+            {0x42BF8A85, "Minigun"},
+            {0xBD248B55, "minismg"},
+            {0x24B17070, "Molotov Cocktail"},
+            {0xA89CB99E,"Musket"},
+            {0x678B81B1,"Nightstick"},
+            {0x34A67B97,"Jerry Can"},
+            {0xBA45E8B8,"Pipe Bomb"},
+            {0x1B06D571,"Pistol"},
+            {0x99AEEB3B,"Pistol .50"},
+            {0xBFE256D4,"Pistol MK II"},
+            {0x94117305, "Pool Cue"},
+            {0xAB564B93,"Proximity Mines"},
+            {0x1D073A89, "Pump Shotgun"},
+            {0x555AF99A,"Pump Shotgun MK II"},
+            {0x6D544C99, "Railgun"},
+            {0xC1B3C3D1,"Heavy Revolver"},
+            {0xCB96392F,"Heavy Revolver MK II"},
+            {0xB1CA77B1,"RPG"},
+            {0x7846A318,"Sawed-Off Shotgun"},
+            {0x2BE6766B,"SMG"},
+            {0x78A97CD0, "SMG Mk II"},
+            {0xFDBC8A50,"Tear Gas"},
+            {0x05FC3C11, "Sniper Rifle"},
+            {0x787F0BB,"Snowballs"},
+            {0xBFD21232,"SNS Pistol"},
+            {0x88374054, "SNS Pistol MKII"},
+            {0xC0A3098D,"Special Carbine"},
+            {0x969C3D67, "Special Carbine MKII"},
+            {0x2C3731D9,"Sticky Bomb"},
+            {0x3656C8C1, "Stun Gun"},
+            {0xDFE37640, "Switchblade"},
+            {0xA2719263, "Unarmed"},
+            {0x83839C4, "Vintage Pistol"},
+            {0x19044EE0,"Pipe Wrench"},
+            {0xAF3696A1,"Up-n-Atomizer"},
+            {0x476BF155,"Unholy Hellbringer"},
+            {0xB62D1F67,"Widowmaker"},
+            {0x3813FC08, "Stone Hatchet"},
+            {0x2B5EF5EC,"Ceramic Pistol"},
+            {0x917F6C8C,"Navy Revolver"},
+            {0xBA536372,"Hazardous Jerry Can"},
+        };
 
+        
 
         foreach (KeyValuePair<string, UInt32> weaponType in weaponCategoriesDict)
         {
@@ -690,64 +786,65 @@ partial class MainMenu : Script
             
             WeaponHash[] allWeaponHashes = (WeaponHash[])Enum.GetValues(typeof(WeaponHash));
 
-            foreach (WeaponHash weapon in allWeaponHashes)
+            foreach (KeyValuePair<UInt32, string> weapon in weaponNamesDict)
             {
-                if(!weaponsToExclude.Contains(weapon))
+                if(!weaponsToExclude.Contains((WeaponHash)weapon.Key))
                 {
-                    uint weaponGroup = Function.Call<uint>((Hash)0xC3287EE3050FB74C, (uint)weapon);
-                    bool hasPedGotWeapon = Function.Call<bool>(Hash.HAS_PED_GOT_WEAPON, Game.Player.Character, (int)weapon, false);
+                    uint weaponGroup = Function.Call<uint>((Hash)0xC3287EE3050FB74C, (uint)weapon.Key);
+                    uint weaponTypeModel = Function.Call<uint>((Hash)0xF46CDC33180FDA94, (uint)weapon.Key);
+                    bool hasPedGotWeapon = Function.Call<bool>(Hash.HAS_PED_GOT_WEAPON, Game.Player.Character, (int)weapon.Key, false);
 
-                    if (weaponGroup == weaponType.Value)
+                    if (weaponGroup == weaponType.Value || weaponTypeModel == weaponType.Value)
                     {
-                        var convertWeaponName = weapon.ToString();
-                        weaponName = modMenuPool.AddSubMenu(weaponCategories, convertWeaponName);
+                        
+                        weaponName = modMenuPool.AddSubMenu(weaponCategories, weapon.Value);
 
                         UIMenuItem equipWeapon = new UIMenuItem("Equip");
                         equipWeapon.Activated += (sender, args) =>
                         {
-                            WeaponFunctions.EquipWeapon(weapon);
+                            WeaponFunctions.EquipWeapon((WeaponHash)weapon.Key);
                         };
                         weaponName.AddItem(equipWeapon);
 
                         UIMenuItem dropWeapon = new UIMenuItem("Drop Weapon");
                         dropWeapon.Activated += (sender, args) =>
                         {
-                            WeaponFunctions.dropWeapon(weapon);
+                            WeaponFunctions.dropWeapon((WeaponHash)weapon.Key);
                         };
                         weaponName.AddItem(dropWeapon);
 
-                        if (!weaponsNoAmmo.Contains(weapon))
+                        if (!weaponsNoAmmo.Contains((WeaponHash)weapon.Key))
                         {
                             UIMenuItem fillAmmo = new UIMenuItem("Fill Ammo");
                             fillAmmo.Activated += (sender, args) =>
                             {
-                                WeaponFunctions.FillAmmo(weapon);
+                                WeaponFunctions.FillAmmo((WeaponHash)weapon.Key);
                             };
                             weaponName.AddItem(fillAmmo);
 
                             UIMenuItem emptyAmmo = new UIMenuItem("Empty Ammo");
                             emptyAmmo.Activated += (sender, args) =>
                             {
-                                WeaponFunctions.EmptyAmmo(weapon);
+                                WeaponFunctions.EmptyAmmo((WeaponHash)weapon.Key);
                             };
                             weaponName.AddItem(emptyAmmo);
                         }
                     }
 
 
-                    if (!weaponsNoComponentList.Contains(weapon) && weaponGroup == weaponType.Value)
+                    if (!weaponsNoComponentList.Contains((WeaponHash)weapon.Key) && weaponGroup == weaponType.Value)
                     {
                         weaponAttachmentMenu = modMenuPool.AddSubMenu(weaponName, "Weapon Attachments");
 
                         foreach (KeyValuePair<string, string> weaponComponent in weaponComponentItems)
                         {
                             int weaponComponentHash = Function.Call<int>(Hash.GET_HASH_KEY, weaponComponent.Key);
-                            bool canWeaponHaveComponent = Function.Call<bool>(Hash._CAN_WEAPON_HAVE_COMPONENT, (int)weapon, weaponComponentHash);
+                            bool canWeaponHaveComponent = Function.Call<bool>(Hash._CAN_WEAPON_HAVE_COMPONENT, (int)weapon.Key, weaponComponentHash);
 
                             if (canWeaponHaveComponent)
                             {
                                 UIMenuItem weaponComponentName = new UIMenuItem(weaponComponent.Value);
-                                weaponComponentName.Activated += (sender, args) => WeaponFunctions.ChangeWeaponComponent(weapon, weaponComponent);
+                                weaponComponentName.Activated += (sender, args) => WeaponFunctions.ChangeWeaponComponent((WeaponHash)weapon.Key, weaponComponent);
                                 weaponAttachmentMenu.AddItem(weaponComponentName);
 
                             }
@@ -758,10 +855,10 @@ partial class MainMenu : Script
 
                         foreach (KeyValuePair<string, int> tintIndex in weaponTintIndexDict)
                         {
-                            if (!weaponsNoTint.Contains(weapon))
+                            if (!weaponsNoTint.Contains((WeaponHash)weapon.Key))
                             {
                                 UIMenuItem tintType = new UIMenuItem(tintIndex.Key);
-                                tintType.Activated += (sender, args) => WeaponFunctions.ChangeWeaponTint(weapon, tintIndex.Value);
+                                tintType.Activated += (sender, args) => WeaponFunctions.ChangeWeaponTint((WeaponHash)weapon.Key, tintIndex.Value);
                                 weaponTint.AddItem(tintType);
                             }
                         }
@@ -769,6 +866,32 @@ partial class MainMenu : Script
                 }
             }
         }
+
+        UIMenu gadgetType;
+        UIMenu gadgetItems;
+
+        gadgetItems = modMenuPool.AddSubMenu(weaponSelectionMenu, "Gadgets");
+
+        Dictionary<UInt32, string> gadgetDict = new Dictionary<UInt32, string>()
+        {
+            {0xA720365C,"Night Vision"},
+            {0xFBAB5776,"Parachute"},
+        };
+
+        foreach (KeyValuePair<UInt32, string> gadget in gadgetDict)
+        {
+            gadgetType = modMenuPool.AddSubMenu(gadgetItems, gadget.Value);
+
+            UIMenuItem equipGadget = new UIMenuItem("Equip");
+            equipGadget.Activated += (sender, args) =>
+            {
+                WeaponFunctions.EquipGadget((WeaponHash)gadget.Key);
+            };
+            gadgetType.AddItem(equipGadget);
+        }
+        
+
+        
 
     }
 

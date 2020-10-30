@@ -1,10 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using GTA;
 using GTA.Native;
+using System.Globalization;
 using GTA.Math;
 
 partial class TeleportFunctions : Script
 {
+    public TeleportFunctions()
+    {
+        Tick += OnTick;
+    }
+
+    private void OnTick(object sender, EventArgs e)
+    {
+        unlockAllInteriorDoors();
+    }
+
     #region load IPL(s)
     internal static void LoadIPLs()
     {

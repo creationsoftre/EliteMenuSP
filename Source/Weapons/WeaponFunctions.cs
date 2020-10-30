@@ -91,10 +91,20 @@ class WeaponFunctions : Script
         foreach (WeaponHash weaponHash in Enum.GetValues(typeof(WeaponHash)))
         {
             bool hasPedGotWeapon = Function.Call<bool>(Hash.HAS_PED_GOT_WEAPON, Game.Player.Character, (int)weaponHash, false);
+            Ped Player = Game.Player.Character;
 
             if (!hasPedGotWeapon)
             {
-                Game.Player.Character.Weapons.Give(weaponHash, 9999, true, true);
+               
+                unsafe
+                {
+                    int maxAmmo = 0;
+
+                    Function.Call(Hash.GET_MAX_AMMO, Player.Handle, (int)weaponHash, &maxAmmo);
+                    Player.Weapons.Give(weaponHash, (int)&maxAmmo, true, true);
+
+                }
+                
             }
             else
             {
@@ -128,11 +138,18 @@ class WeaponFunctions : Script
         foreach (WeaponHash weaponHash in Enum.GetValues(typeof(WeaponHash)))
         {
             bool hasPedGotWeapon = Function.Call<bool>(Hash.HAS_PED_GOT_WEAPON, Game.Player.Character, (int)weaponHash, false);
-
+            Ped Player = Game.Player.Character;
             if (hasPedGotWeapon)
             {
-                Function.Call(Hash.SET_PED_AMMO, Game.Player.Character, (int)weaponHash, 9999);
-                MainMenu.DisplayMessage("Max Ammo Received");
+                int ammoInClip = Function.Call<int>(Hash.GET_MAX_AMMO_IN_CLIP, Player.Handle, (int)weaponHash, false);
+                Function.Call(Hash.SET_AMMO_IN_CLIP, Player.Handle, (int)weaponHash, ammoInClip);
+                unsafe
+                {
+                    int ammo = 0;
+                    Function.Call(Hash.GET_MAX_AMMO, Player.Handle, (int)weaponHash, &ammo);
+                    Function.Call(Hash.SET_PED_AMMO, Player.Handle, (int)weaponHash, ammo);
+                    MainMenu.DisplayMessage("Max Ammo Received");
+                }
             }
             else
             {
@@ -246,13 +263,16 @@ class WeaponFunctions : Script
         else
         {
             
-            //Get Ammo Type from current weapon in menu
-            UInt32 ammoType = Function.Call<UInt32>(Hash._GET_PED_AMMO_TYPE, Player, (int)weapon);
-            //Set ped ammo to 9999 by type 'FMJ or etc'
-            Function.Call(Hash.SET_PED_AMMO_BY_TYPE, Player, ammoType, 9999);
-            
 
-            
+            int ammoInClip = Function.Call<int>(Hash.GET_MAX_AMMO_IN_CLIP, Player.Handle, (int)weapon, false);
+            Function.Call(Hash.SET_AMMO_IN_CLIP, Player.Handle, (int)weapon, ammoInClip);
+            unsafe
+            {
+                int ammo = 0;
+                Function.Call(Hash.GET_MAX_AMMO, Player.Handle, (int)weapon, &ammo);
+                Function.Call(Hash.SET_PED_AMMO, Player.Handle, (int)weapon, ammo);
+                MainMenu.DisplayMessage("Ammo Has Been Filled");
+            }
             
         }
     }
@@ -260,14 +280,14 @@ class WeaponFunctions : Script
     internal static void EmptyAmmo(WeaponHash weapon)
     {
         bool hasPedGotWeapon = Function.Call<bool>(Hash.HAS_PED_GOT_WEAPON, Game.Player.Character, (int)weapon, false);
-
+        Ped Player = Game.Player.Character;
         if (!hasPedGotWeapon)
         {
             MainMenu.DisplayMessage("You do not have this Weapon Equiped");
         }
         else
         {
-           
+            Function.Call(Hash.SET_PED_AMMO, Player.Handle, (int)weapon, 0);
         }
     }
 
@@ -306,5 +326,15 @@ class WeaponFunctions : Script
 
         MainMenu.DisplayMessage("All Weapons Received");
     }
+
+    internal static void EquipGadget(WeaponHash gadget)
+    {
+        bool isGadgetEquipped = Function.Call<bool>(Hash.GET_IS_PED_GADGET_EQUIPPED, Game.Player.Character.Handle);
+
+        if(!isGadgetEquipped)
+        {
+            Function.Call(Hash.GIVE_WEAPON_TO_PED, Game.Player.Character.Handle, (int)gadget, 1, false, false);
+        }
+    } // work in progress
     #endregion
 }

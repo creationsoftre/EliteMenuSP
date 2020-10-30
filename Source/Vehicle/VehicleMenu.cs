@@ -9,6 +9,9 @@ partial class MainMenu : Script
     public UIMenu vehicleMenu;
     public UIMenu vehicleSpawnerMenu;
     public UIMenu vehicleModMenu;
+    public UIMenu vehicleOptions;
+    public UIMenu vehicleWindowOptions;
+    public UIMenu vehicleDoorOptions;
 
 
     private void EliteVehicleMenu()
@@ -24,10 +27,16 @@ partial class MainMenu : Script
         vehicleSpawnerMenu = modMenuPool.AddSubMenu(vehicleMenu, "Vehicle Spawner Menu");
         EliteVehicleSpawnerMenu();
 
+        vehicleOptions = modMenuPool.AddSubMenu(vehicleMenu, "Vehicle Options");
+
+        vehicleWindowOptions = modMenuPool.AddSubMenu(vehicleOptions, "Window Options");
+
+        vehicleDoorOptions = modMenuPool.AddSubMenu(vehicleOptions, "Door Options");
+
         //Vehicle Weapons 
         UIMenuItem vehicleWeapons = new UIMenuItem("Select Vehicle Weapons");
-        vehicleMenu.AddItem(vehicleWeapons);
-        vehicleMenu.OnItemSelect += (sender, item, index) =>
+        vehicleModMenu.AddItem(vehicleWeapons);
+        vehicleModMenu.OnItemSelect += (sender, item, index) =>
         {
             if (item == vehicleWeapons)
             {
@@ -35,21 +44,11 @@ partial class MainMenu : Script
             }
         };
 
-        //Vehicle Weapons 
-        UIMenuItem warpInSpawnedCar = new UIMenuCheckboxItem("Warp In Spawned Car", false);
-        vehicleMenu.AddItem(warpInSpawnedCar);
-        vehicleMenu.OnCheckboxChange += (sender, item, checked_) =>
-        {
-            if (item == warpInSpawnedCar)
-            {
-                VehicleFunctions.ToggleWarpInSpawnedVehicle();
-            }
-        };
 
         //Fix Vehicle Checkbox
         UIMenuItem fixVehicle = new UIMenuItem("Fix Vehicle");
-        vehicleMenu.AddItem(fixVehicle);
-        vehicleMenu.OnItemSelect += (sender, item, index) =>
+        vehicleOptions.AddItem(fixVehicle);
+        vehicleOptions.OnItemSelect += (sender, item, index) =>
         {
             if (item == fixVehicle)
             {
@@ -59,8 +58,8 @@ partial class MainMenu : Script
 
         //Wash Vehicle Checkbox
         UIMenuItem washVehicle = new UIMenuItem("Wash Vehicle");
-        vehicleMenu.AddItem(washVehicle);
-        vehicleMenu.OnItemSelect += (sender, item, index) =>
+        vehicleOptions.AddItem(washVehicle);
+        vehicleOptions.OnItemSelect += (sender, item, index) =>
         {
             if (item == washVehicle)
             {
@@ -68,10 +67,204 @@ partial class MainMenu : Script
             }
         };
 
+        //Flip Vehicle
+        UIMenuItem flipVehicle = new UIMenuItem("Flip Vehicle");
+        vehicleOptions.AddItem(flipVehicle);
+        vehicleOptions.OnItemSelect += (sender, item, index) =>
+        {
+            if (item == flipVehicle)
+            {
+                VehicleFunctions.FlipVehicle();
+            }
+        };
+
+        //Toggle Alarm
+        UIMenuItem vehicleAlarm = new UIMenuItem("Vehicle Alarm");
+        vehicleOptions.AddItem(vehicleAlarm);
+        vehicleOptions.OnItemSelect += (sender, item, index) =>
+        {
+            if (item == vehicleAlarm)
+            {
+                VehicleFunctions.toggleVehicleAlarm();
+            }
+        };
+
+        //Set Vehicle as Lock Doors 
+        UIMenuItem toggleLockDoors = new UIMenuItem("Lock Doors");
+        vehicleOptions.AddItem(toggleLockDoors);
+        vehicleOptions.OnItemSelect += (sender, item, index) =>
+        {
+            if (item == toggleLockDoors)
+            {
+                VehicleFunctions.ToggleLockDoors();
+            }
+        };
+
+        //Set Vehicle Child Lock
+        UIMenuItem toggleChildLock = new UIMenuItem("Child Lock");
+        vehicleOptions.AddItem(toggleChildLock);
+        vehicleOptions.OnItemSelect += (sender, item, index) =>
+        {
+            if (item == toggleChildLock)
+            {
+                
+                VehicleFunctions.ToggleChildLock();
+            }
+        };
+
+        //Set Vehicle Peds Cannot Drag you out
+        UIMenuItem toggleNoDrag = new UIMenuItem("Locked for Peds");
+        vehicleOptions.AddItem(toggleNoDrag);
+        vehicleOptions.OnItemSelect += (sender, item, index) =>
+        {
+            if (item == toggleNoDrag)
+            {
+
+                VehicleFunctions.ToggleNoGettingPulled();
+            }
+        };
+
+        //Roll Down All windows
+        UIMenuItem toggleRollDownWindows = new UIMenuItem("Roll Down All Windows");
+        vehicleWindowOptions.AddItem(toggleRollDownWindows);
+        vehicleWindowOptions.OnItemSelect += (sender, item, index) =>
+        {
+            if (item == toggleRollDownWindows)
+            {
+
+                VehicleFunctions.RollAllWindowDown();
+            }
+        };
+
+        //Window Options
+        Dictionary<int, string> windowIndex = new Dictionary<int, string>()
+        {
+            {0, "Front Driver Window" },
+            {1, "Front Passenger Window" },
+            {2, "Rear Driver Window" },
+            {3, "Rear Passenger Window"},
+        };
+
+        foreach (KeyValuePair<int,string> window in windowIndex)
+        {
+            UIMenu windowPos = modMenuPool.AddSubMenu(vehicleWindowOptions, window.Value);
+            UIMenuItem rollDownWindow = new UIMenuItem("Roll Down Window");
+            windowPos.AddItem(rollDownWindow);
+            UIMenuItem rollUpWindow = new UIMenuItem("Roll Up Window");
+            windowPos.AddItem(rollUpWindow);
+            UIMenuItem fixWindow = new UIMenuItem("Fix Window");
+            windowPos.AddItem(fixWindow);
+
+            windowPos.OnItemSelect += (sender, item, index) =>
+            {
+                if (item == rollDownWindow)
+                {
+                    VehicleFunctions.RollWindowDown(window);
+                }
+
+                if(item == rollUpWindow)
+                {
+                    VehicleFunctions.RollWindowUp(window);
+                }
+
+                if (item == fixWindow)
+                {
+                    VehicleFunctions.FixWindow(window);
+                }
+            };
+        }
+
+
+        Dictionary<int, string> doorIndex = new Dictionary<int, string>()
+        {
+            {0, "Front Driver Door" },
+            {1, "Front Passenger Door" },
+            {2, "Rear Driver Door" },
+            {3, "Rear Passenger Door"},
+            {4, "Hood"},
+            {5, "Trunk"},
+            {6, "Trunk2"},
+        };
+
+        UIMenuItem closeAllDoors = new UIMenuItem("Close All Doors");
+        vehicleDoorOptions.AddItem(closeAllDoors);
+
+        foreach (KeyValuePair<int, string> door in doorIndex)
+        {
+            UIMenu doorPos = modMenuPool.AddSubMenu(vehicleDoorOptions, door.Value);
+            UIMenuItem openDoor = new UIMenuItem("Open Door");
+            doorPos.AddItem(openDoor);
+            UIMenuItem closeDoor = new UIMenuItem("Close Door");
+            doorPos.AddItem(closeDoor);
+            
+
+            doorPos.OnItemSelect += (sender, item, index) =>
+            {
+                if (item == openDoor)
+                {
+                    VehicleFunctions.VehOpenDoor(door);
+                }
+
+                if (item == closeDoor)
+                {
+                    VehicleFunctions.VehCloseDoor(door);
+                }
+            };
+
+            vehicleDoorOptions.OnItemSelect += (sender, item, index) =>
+            {
+                if (item == closeAllDoors)
+                {
+                    VehicleFunctions.CloseAllDoors();
+                }
+            };
+        }
+
+        
+
+
+
+        #region Set Dirt Level
+        List<dynamic> listOfDirtLevels = new List<dynamic>();
+
+        Vehicle currentPedVehicle = Function.Call<Vehicle>(Hash.GET_VEHICLE_PED_IS_IN, Game.Player.Character, false);
+
+        float getDirtLevel = Function.Call<float>(Hash.GET_VEHICLE_DIRT_LEVEL, currentPedVehicle);
+        
+        for (float i = 0.0f; i <= 15.0; i += 1.0f)
+        {
+            listOfDirtLevels.Add(i);
+        }
+
+        UIMenuListItem dirtLevelyList = new UIMenuListItem("Dirt Level", listOfDirtLevels, 0);
+        vehicleOptions.AddItem(dirtLevelyList);
+
+        vehicleOptions.OnListChange += (sender, listItem, index) =>
+        {
+            if (listItem == dirtLevelyList)
+            {
+                float listIndex = dirtLevelyList.Index;
+                float currentDirtLevel = listOfDirtLevels[index];
+                Function.Call(Hash.SET_VEHICLE_DIRT_LEVEL, currentPedVehicle, currentDirtLevel);
+            }
+        };
+        #endregion
+
+        //Vehicle Weapons 
+        UIMenuItem warpInSpawnedCar = new UIMenuCheckboxItem("Warp In Spawned Car", false);
+        vehicleOptions.AddItem(warpInSpawnedCar);
+        vehicleOptions.OnCheckboxChange += (sender, item, checked_) =>
+        {
+            if (item == warpInSpawnedCar)
+            {
+                VehicleFunctions.ToggleWarpInSpawnedVehicle();
+            }
+        };
+
         //Set Vehicle as Indestructible Checkbox
         UIMenuItem Indestructible = new UIMenuCheckboxItem("Indestructible", false);
-        vehicleMenu.AddItem(Indestructible);
-        vehicleMenu.OnCheckboxChange += (sender, item, checked_) =>
+        vehicleOptions.AddItem(Indestructible);
+        vehicleOptions.OnCheckboxChange += (sender, item, checked_) =>
         {
             if (item == Indestructible)
             {
@@ -81,8 +274,8 @@ partial class MainMenu : Script
 
         // toggle seatbelt Checkbox
         UIMenuItem toggleSeatBelt = new UIMenuCheckboxItem("Enable Seatbelt", false);
-        vehicleMenu.AddItem(toggleSeatBelt);
-        vehicleMenu.OnCheckboxChange += (sender, item, checked_) =>
+        vehicleOptions.AddItem(toggleSeatBelt);
+        vehicleOptions.OnCheckboxChange += (sender, item, checked_) =>
         {
             if (item == toggleSeatBelt)
             {
@@ -90,21 +283,10 @@ partial class MainMenu : Script
             }
         };
 
-        //Set Vehicle as Lock Doors Checkbox
-        UIMenuItem toggleLockDoors = new UIMenuCheckboxItem("Lock Doors", false);
-        vehicleMenu.AddItem(toggleLockDoors);
-        vehicleMenu.OnCheckboxChange += (sender, item, checked_) =>
-        {
-            if (item == toggleLockDoors)
-            {
-                VehicleFunctions.ToggleLockDoors();
-            }
-        };
-
         //Never fall off motorcycle Checkbox
         UIMenuItem toggleNeverFallOffBike = new UIMenuCheckboxItem("Never Fall-Off Bike", false);
-        vehicleMenu.AddItem(toggleNeverFallOffBike);
-        vehicleMenu.OnCheckboxChange += (sender, item, checked_) =>
+        vehicleOptions.AddItem(toggleNeverFallOffBike);
+        vehicleOptions.OnCheckboxChange += (sender, item, checked_) =>
         {
             if (item == toggleNeverFallOffBike)
             {
@@ -114,8 +296,8 @@ partial class MainMenu : Script
 
         //Toggle Speed Boost Checkbox
         UIMenuItem toggleSpeedBoost = new UIMenuCheckboxItem("Speed Boost", false);
-        vehicleMenu.AddItem(toggleSpeedBoost);
-        vehicleMenu.OnCheckboxChange += (sender, item, checked_) =>
+        vehicleOptions.AddItem(toggleSpeedBoost);
+        vehicleOptions.OnCheckboxChange += (sender, item, checked_) =>
         {
             if (item == toggleSpeedBoost)
             {
@@ -125,8 +307,8 @@ partial class MainMenu : Script
 
         //Toggle Vehicle Jump Checkbox
         UIMenuItem toggleVehicleJump = new UIMenuCheckboxItem("Super Jump", false);
-        vehicleMenu.AddItem(toggleVehicleJump);
-        vehicleMenu.OnCheckboxChange += (sender, item, checked_) =>
+        vehicleOptions.AddItem(toggleVehicleJump);
+        vehicleOptions.OnCheckboxChange += (sender, item, checked_) =>
         {
             if (item == toggleVehicleJump)
             {
@@ -134,10 +316,21 @@ partial class MainMenu : Script
             }
         };
 
+        //Toggle Vehicle Invisible
+        UIMenuItem toggleVehicleInvisible = new UIMenuCheckboxItem("Invisible", false);
+        vehicleOptions.AddItem(toggleVehicleInvisible);
+        vehicleOptions.OnCheckboxChange += (sender, item, checked_) =>
+        {
+            if (item == toggleVehicleInvisible)
+            {
+                VehicleFunctions.ToggleVehicleInvisible();
+            }
+        };
+
         //Toggle Engine Always On
         UIMenuItem engineOn = new UIMenuCheckboxItem("Leave Engine Running", false);
-        vehicleMenu.AddItem(engineOn);
-        vehicleMenu.OnCheckboxChange += (sender, item, checked_) =>
+        vehicleOptions.AddItem(engineOn);
+        vehicleOptions.OnCheckboxChange += (sender, item, checked_) =>
         {
             if (item == engineOn)
             {
@@ -182,7 +375,7 @@ partial class MainMenu : Script
                 string convertDisplayModelToName = Function.Call<string>(Hash._GET_LABEL_TEXT, getDisplayModel);
 
                 
-                if (vehicleClass == vehicleType.Value && convertDisplayModelToName != null)
+                if (convertDisplayModelToName != null && vehicleClass == vehicleType.Value )
                 {
                     //list for all vehicles
                     UIMenuItem listOfVehicles = new UIMenuItem(convertDisplayModelToName);

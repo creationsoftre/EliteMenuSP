@@ -999,6 +999,17 @@ partial class MainMenu : Script
             }
         };
 
+        //Invisibility Checkbox
+        UIMenuItem invisibility  = new UIMenuCheckboxItem("Invisibility ", false);
+        playerOptions.AddItem(invisibility);
+        playerOptions.OnCheckboxChange += (sender, item, checked_) =>
+        {
+            if (item == invisibility)
+            {
+                PlayerFunctions.Invisibility();
+            }
+        };
+
         //Super Jump Checkbox
         UIMenuItem superJump = new UIMenuCheckboxItem("Super Jump", false);
         playerOptions.AddItem(superJump);
