@@ -10,6 +10,8 @@ partial class TeleportFunctions : Script
     public TeleportFunctions()
     {
         Tick += OnTick;
+        Function.Call(Hash._LOAD_MP_DLC_MAPS);
+        Function.Call(Hash._ENABLE_MP_DLC_MAPS, 1);
     }
 
     private void OnTick(object sender, EventArgs e)
@@ -20,9 +22,6 @@ partial class TeleportFunctions : Script
     #region load IPL(s)
     internal static void LoadIPLs()
     {
-        Function.Call(Hash._LOAD_MP_DLC_MAPS);
-        Function.Call(Hash._ENABLE_MP_DLC_MAPS, 1);
-
         string[] locationIPLs = new string[]
         {
             //North Yankton

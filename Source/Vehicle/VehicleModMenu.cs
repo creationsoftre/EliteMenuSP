@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.Remoting.Channels;
 using EliteMenu.Data;
 using GTA;
 using GTA.Native;
@@ -12,76 +13,220 @@ using NativeUI;
 partial class MainMenu
 {
     public Ped Player = Game.Player.Character;
+    Vehicle veh = CommonFunctions.GetVehicle();
 
     private void ElitevehicleModCategoryListMenu()
     {
+        #region
 
+        UIMenu vehMods = modMenuPool.AddSubMenu(vehicleModMenu, "Mods");
 
-        Vehicle currentVehicle = Game.Player.Character.CurrentVehicle;
-        Function.Call(Hash.SET_VEHICLE_MOD_KIT, currentVehicle, 0);
-
-        Dictionary<string, int> vehicleModDict = new Dictionary<string, int>()
+        vehMods.OnMenuOpen += (sender) =>
         {
-            {"Spoilers", 0},
-            {"Front Bumper", 1},
-            {"Rear Bumper", 2},
-            {"Side Skirt", 3},
-            {"Exhaust",4},
-            {"Frame", 5},
-            {"Grille", 6},
-            {"Hood", 7},
-            {"Fender", 8},
-            {"Right Fender", 9},
-            {"Roof", 10},
-            {"Engine", 11},
-            {"Brakes", 12},
-            {"Transmission", 13},
-            {"Horns", 14},
-            {"Suspension", 15},
-            {"Armor", 16},
-            {"Front Wheels", 23},
-            {"Back Wheels", 24},
-            {"Plate Holder", 25},
-            {"Vanity Plates", 26},
-            {"Trim Design", 27},
-            {"Ornaments", 28},
-            {"Dashboard", 29},
-            {"Dial Design", 30},
-            {"Door Speakers", 31},
-            {"Seats", 32},
-            {"Steering Wheels", 33},
-            {"Column ShifterLevers", 34},
-            {"Plaques", 35},
-            {"Speakers", 36},
-            {"Trunk", 37},
-            {"Hydraulics", 38},
-            {"Engine Block", 39},
-            {"Air Filter", 40},
-            {"Struts", 41},
-            {"Arch Cover", 42},
-            {"Aerials", 43},
-            {"Trim", 44},
-            {"Tank", 45},
-            {"Windows", 46},
-            {"Livery", 48},
-        };
 
-        foreach (KeyValuePair<string, int> vehicleMod in vehicleModDict)
-        {
-            int vehicleModCount = Function.Call<int>(Hash.GET_NUM_VEHICLE_MODS, currentVehicle, (int)vehicleMod.Value);
-
-
-            if (vehicleMod.Value != 24 && vehicleMod.Value != 23)
+            if (veh.Exists() && veh != null && !veh.IsDead)
             {
-                UIMenuItem ModCategory = new UIMenuItem(vehicleMod.Key);
-                //ModCategory.Activated += (sender, args) => vehicleModCount;
-                vehicleModMenu.AddItem(ModCategory);
+                Function.Call(Hash.SET_VEHICLE_MOD_KIT, veh, 0);
+
+
+                foreach (VehicleMod modType in Enum.GetValues(typeof(VehicleMod)))
+                {
+                    List<dynamic> modList = new List<dynamic>();
+
+                    int vehModCount = Function.Call<int>(Hash.GET_NUM_VEHICLE_MODS, veh, (int)modType);
+
+                    // Get the current item index ({current}/{max upgrades})
+                    var currentItem = $"[1/{ vehModCount + 1}]";
+
+                    var modName = $"Stock {modType} {currentItem}";
+                    modList.Add(modName);
+
+                    if (vehModCount > 0)
+                    {
+                        if(modType != VehicleMod.BackWheels && modType != VehicleMod.FrontWheels)
+                        {
+
+                            for (int x = 0; x < vehModCount; x++)
+                            {
+                                string modLabel = Function.Call<string>(Hash.GET_MOD_TEXT_LABEL, veh, (int)modType, x);
+                                string convertModLabelText = CommonFunctions.GetLabelText(modLabel);
+
+                                currentItem = $"[{2 + x}/{ vehModCount + 1}]";
+                                modName = Function.Call<string>(Hash.GET_MOD_TEXT_LABEL, veh, (int)modType, x) != "" ? $"{convertModLabelText} {currentItem}" : $"{modType} #{x} {currentItem}";
+                                modList.Add(modName);
+                            }
+
+                            int currIndex = Function.Call<int>(Hash.GET_VEHICLE_MOD, veh.Handle, (int)modType) + 1;
+                            UIMenuListItem modTypeListItem = new UIMenuListItem(modType.ToString(), modList, currIndex);
+                            vehMods.AddItem(modTypeListItem);
+
+                            vehMods.OnListChange += (senderMenu, item, index) =>
+                            {
+                                if(index < senderMenu.Size - 9)
+                                {
+                                    if(item == modTypeListItem)
+                                    {
+                                        int listIndex = modTypeListItem.Index;
+                                        bool customWheels = Function.Call<bool>(Hash.GET_VEHICLE_MOD_VARIATION, veh, 23);
+                                        Function.Call(Hash.SET_VEHICLE_MOD, veh, (int)modType, listIndex, customWheels);
+                                    }
+                                                                     
+                                    
+                                }
+                            };
+
+                        }
+                    }
+                }
+
+            }
+          
+        };
+        #endregion
+
+        #region Livery
+        UIMenu vehLiveryMods = modMenuPool.AddSubMenu(vehicleModMenu, "Livery");
+
+        vehLiveryMods.OnMenuOpen += (sender) =>
+        {
+            if (veh.Exists() && veh != null && !veh.IsDead)
+            {
+                if (veh.Driver == Player)
+                {
+                    vehLiveryMods.Clear();
+                    Function.Call(Hash.SET_VEHICLE_MOD_KIT, veh, 0);
+                    int liveryCount = Function.Call<int>(Hash.GET_NUM_VEHICLE_MODS, veh, 48);
+
+                    DisplayMessage(liveryCount.ToString());
+
+                    if (liveryCount > 0)
+                    {
+                        var liveryList = new List<dynamic>();
+
+                        for (int i = 0; i < liveryCount; i++)
+                        {
+                            string label = CommonFunctions.GetModLabelText(veh, 48, i);
+                            string convertToDisplayName = CommonFunctions.GetLabelText(label);
+                            DisplayMessage(convertToDisplayName);
+
+                            if (label != "NULL")
+                            {
+                                liveryList.Add(convertToDisplayName);
+                            }
+
+                        }
+
+                        UIMenuListItem liveryListItem = new UIMenuListItem("Set Livery", liveryList, 0, "Choose a livery for this vehicle.");
+                        vehLiveryMods.AddItem(liveryListItem);
+                        liveryListItem.Activated += (senderMenu, args) =>
+                        {
+                            int listIndex = liveryListItem.Index;
+                            Function.Call(Hash.SET_VEHICLE_MOD, veh, 48, listIndex, false);
+                            
+
+                        };
+
+                        vehLiveryMods.RefreshIndex();
+                    }
+                }
+                else
+                {
+                    DisplayMessage("You have to be the driver of a vehicle to access this menu.");
+                }
+            }
+            else
+            {
+                DisplayMessage("You have to be the driver of a vehicle to access this menu.");
+            }
+        };
+        #endregion
+
+        #region Toggle Mods
+        UIMenuItem Turbo = new UIMenuCheckboxItem("Turbo", false);
+        vehicleModMenu.AddItem(Turbo);
+        vehicleModMenu.OnCheckboxChange += (sender, item, checked_) =>
+        {
+
+            if (item == Turbo)
+            {
+                if (checked_)
+                {
+                    if (veh.Exists() && veh != null)
+                    {
+                        veh.ToggleMod(VehicleToggleMod.Turbo, true);
+                        MainMenu.DisplayMessage("Turbo Enabled");
+                    }
+
+                }
+                else
+                {
+                    if (veh.Exists() && veh != null)
+                    {
+                        veh.ToggleMod(VehicleToggleMod.Turbo, false);
+                        MainMenu.DisplayMessage("Turbo Disabled");
+                    }
+
+                }
 
             }
 
-        }
+        };
 
+        UIMenuItem xeonHeadLights = new UIMenuCheckboxItem("Xeon Head Lights", false);
+        vehicleModMenu.AddItem(xeonHeadLights);
+        vehicleModMenu.OnCheckboxChange += (sender, item, checked_) =>
+        {
+            if (item == xeonHeadLights)
+            {
+                if (checked_)
+                {
+                    if (veh.Exists() && veh != null)
+                    {
+                        veh.ToggleMod(VehicleToggleMod.XenonHeadlights, true);
+                        MainMenu.DisplayMessage("Xenon Headlights Enabled");
+                    }
 
+                }
+                else
+                {
+                    if (veh.Exists() && veh != null)
+                    {
+                        veh.ToggleMod(VehicleToggleMod.XenonHeadlights, false);
+                        MainMenu.DisplayMessage("Xenon Headlights Disabled");
+                    }
+                }
+
+            }
+        };
+
+        UIMenuItem tireSmoke = new UIMenuCheckboxItem("Tire Smoke", false);
+        vehicleModMenu.AddItem(tireSmoke);
+        vehicleModMenu.OnCheckboxChange += (sender, item, checked_) =>
+        {
+
+            if (item == tireSmoke)
+            {
+                if (checked_)
+                {
+                    if (veh.Exists() && veh != null)
+                    {
+                        veh.ToggleMod(VehicleToggleMod.TireSmoke, true);
+                        MainMenu.DisplayMessage("Tire Smoke Enabled");
+                    }
+
+                }
+                else
+                {
+                    if (veh.Exists() && veh != null)
+                    {
+                        veh.ToggleMod(VehicleToggleMod.TireSmoke, false);
+                        MainMenu.DisplayMessage("Tire Smoke Disabled");
+                    }
+                }
+
+            }
+        };
+        #endregion
 
         #region Respray
         //Vehicle Color Menu
@@ -148,7 +293,7 @@ partial class MainMenu
             WheelColors.AddRange(Classic);
         }
 
-        
+
 
         UIMenuListItem wheelColorList = new UIMenuListItem("Wheel Color", WheelColors, 0);
         UIMenuSliderItem vehicleEnveffScale = new UIMenuSliderItem("Vehicle Enveff Scale");
@@ -246,7 +391,7 @@ partial class MainMenu
                 int dashColor = 0;
                 int intColor = 0;
 
-               unsafe
+                unsafe
                 {
                     Function.Call(Hash.GET_VEHICLE_COLOURS, veh.Handle, &primaryColor, &secondaryColor);
                     Function.Call(Hash.GET_VEHICLE_EXTRA_COLOURS, veh.Handle, &pearlColor, &wheelColor);
@@ -333,97 +478,52 @@ partial class MainMenu
         }
         #endregion
 
-        UIMenuItem Lights = new UIMenuItem("Lights");
-        vehicleModMenu.AddItem(Lights);
+        #region License Plate Styles
 
-        UIMenuItem Plates = new UIMenuItem("Plates");
-        vehicleModMenu.AddItem(Plates);
-
-        UIMenuItem Windows = new UIMenuItem("Windows");
-        vehicleModMenu.AddItem(Windows);
-
-        UIMenuItem Wheels = new UIMenuItem("Wheels");
-        vehicleModMenu.AddItem(Wheels);
-
-        vehicleModMenu.OnItemSelect += (sender, item, index) =>
-        {
-            //EliteVehicleModWheelsMenu(currentVehicle);
+        var licensePlates = new List<dynamic>
+        { CommonFunctions.GetLabelText("CMOD_PLA_0"),
+          CommonFunctions.GetLabelText("CMOD_PLA_1"),
+          CommonFunctions.GetLabelText("CMOD_PLA_2"),
+          CommonFunctions.GetLabelText("CMOD_PLA_3"),
+          CommonFunctions.GetLabelText("CMOD_PLA_4"),
+          "North Yankton"
         };
-
-        #region Toggle Mods
-        UIMenuItem Turbo = new UIMenuCheckboxItem("Turbo", false);
-        vehicleModMenu.AddItem(Turbo);
-        vehicleModMenu.OnCheckboxChange += (sender, item, checked_) =>
+        UIMenuListItem setLicensePlateType = new UIMenuListItem("License Plate Type", licensePlates, 0, "Choose a license plate type and press ~r~enter ~s~to apply " +
+            "it to your vehicle.");
+        vehicleModMenu.AddItem(setLicensePlateType);
+        vehicleModMenu.OnListChange += (sender, item, index) =>
         {
-            bool isToggleModTurboOn = currentVehicle.IsToggleModOn(VehicleToggleMod.Turbo);
-
-            if (item == Turbo)
+            if (item == setLicensePlateType)
             {
-                if (Player.IsInVehicle() && !isToggleModTurboOn)
+                // Set the license plate style.
+                switch (index)
                 {
-                    isToggleModTurboOn = !isToggleModTurboOn;
-                    currentVehicle.ToggleMod(VehicleToggleMod.Turbo, true);
-                    MainMenu.DisplayMessage("Turbo Enabled");
+                    case 0:
+                        VehicleFunctions.SetPlateStyle(index);
+                        break;
+                    case 1:
+                        VehicleFunctions.SetPlateStyle(index);
+                        break;
+                    case 2:
+                        VehicleFunctions.SetPlateStyle(index);
+                        break;
+                    case 3:
+                        VehicleFunctions.SetPlateStyle(index);
+                        break;
+                    case 4:
+                        VehicleFunctions.SetPlateStyle(index);
+                        break;
+                    case 5:
+                        VehicleFunctions.SetPlateStyle(index);
+                        break;
+                    default:
+                        break;
                 }
-                else
-                {
-                    isToggleModTurboOn = !isToggleModTurboOn;
-                    currentVehicle.ToggleMod(VehicleToggleMod.Turbo, false);
-                    MainMenu.DisplayMessage("Turbo Disabled");
-                }
-
-            }
-
-        };
-
-        UIMenuItem xeonHeadLights = new UIMenuCheckboxItem("Xeon Head Lights", false);
-        vehicleModMenu.AddItem(xeonHeadLights);
-        vehicleModMenu.OnCheckboxChange += (sender, item, checked_) =>
-        {
-            bool isTogglexeonHeadLightsOn = currentVehicle.IsToggleModOn(VehicleToggleMod.Turbo);
-
-            if (item == xeonHeadLights)
-            {
-                if (Player.IsInVehicle() && !isTogglexeonHeadLightsOn)
-                {
-                    isTogglexeonHeadLightsOn = !isTogglexeonHeadLightsOn;
-                    currentVehicle.ToggleMod(VehicleToggleMod.XenonHeadlights, true);
-                    MainMenu.DisplayMessage("Xenon Headlights Enabled");
-                }
-                else
-                {
-                    isTogglexeonHeadLightsOn = !isTogglexeonHeadLightsOn;
-                    currentVehicle.ToggleMod(VehicleToggleMod.XenonHeadlights, false);
-                    MainMenu.DisplayMessage("Xenon Headlights Disabled");
-                }
-
             }
         };
 
-        UIMenuItem tireSmoke = new UIMenuCheckboxItem("Tire Smoke", false);
-        vehicleModMenu.AddItem(tireSmoke);
-        vehicleModMenu.OnCheckboxChange += (sender, item, checked_) =>
-        {
-            bool isTireSmokeOn = currentVehicle.IsToggleModOn(VehicleToggleMod.TireSmoke);
-
-            if (item == tireSmoke)
-            {
-                if (Player.IsInVehicle() && !isTireSmokeOn)
-                {
-                    isTireSmokeOn = !isTireSmokeOn;
-                    currentVehicle.ToggleMod(VehicleToggleMod.TireSmoke, true);
-                    MainMenu.DisplayMessage("Tire Smoke Enabled");
-                }
-                else
-                {
-                    isTireSmokeOn = !isTireSmokeOn;
-                    currentVehicle.ToggleMod(VehicleToggleMod.TireSmoke, false);
-                    MainMenu.DisplayMessage("Tire Smoke Disabled");
-                }
-
-            }
-        };
         #endregion
+
     }
 
 
@@ -466,10 +566,10 @@ partial class MainMenu
 
         int r = 255, g = 255, b = 255;
 
-        
-        Function.Call<int>(Hash._SET_VEHICLE_NEON_LIGHTS_COLOUR, veh.Handle, r, g, b);
-        
-        
+
+        //Function.Call<int>(Hash._GET_VEHICLE_NEON_LIGHTS_COLOUR, veh.Handle, &r, &g, &b);
+
+
 
         if (r == 255 && g == 0 && b == 255) // default return value when the vehicle has no neon kit selected.
         {
@@ -482,6 +582,30 @@ partial class MainMenu
         }
 
         return 0;
+    }
+    #endregion
+
+    #region Update Vehicle Mods Menu
+    /// <summary>
+    /// Refreshes the mods page. The selectedIndex allows you to go straight to a specific index after refreshing the menu.
+    /// This is used because when the wheel type is changed, the menu is refreshed to update the available wheels list.
+    /// </summary>
+    /// <param name="selectedIndex">Pass this if you want to go straight to a specific mod/index.</param>
+    public void UpdateMods(int selectedIndex = 0)
+    {
+        // If there are items, remove all of them.
+        if (vehicleModMenu.Size > 0)
+        {
+            if (selectedIndex != 0)
+            {
+                vehicleModMenu.MenuItems.Clear();
+            }
+            else
+            {
+                
+            }
+
+        }
     }
     #endregion
 }

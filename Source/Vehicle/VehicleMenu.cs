@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using GTA;
 using GTA.Native;
 using NativeUI;
+using NativeUI.PauseMenu;
 
 partial class MainMenu : Script
 {
@@ -14,14 +16,16 @@ partial class MainMenu : Script
     public UIMenu vehicleDoorOptions;
 
 
+
     private void EliteVehicleMenu()
     {
         //Creates Vehicle Menu
         vehicleMenu = modMenuPool.AddSubMenu(mainMenu, "Vehicle");
 
         //Vehicle Mod Menu
-        vehicleModMenu = modMenuPool.AddSubMenu(vehicleMenu, "Vehicle Mod Menu");
+        vehicleModMenu = modMenuPool.AddSubMenu(vehicleMenu, "Vehicle Mods");
         ElitevehicleModCategoryListMenu();
+
 
         //Vehical Spawner
         vehicleSpawnerMenu = modMenuPool.AddSubMenu(vehicleMenu, "Vehicle Spawner Menu");
@@ -33,16 +37,18 @@ partial class MainMenu : Script
 
         vehicleDoorOptions = modMenuPool.AddSubMenu(vehicleOptions, "Door Options");
 
-        //Vehicle Weapons 
-        UIMenuItem vehicleWeapons = new UIMenuItem("Select Vehicle Weapons");
-        vehicleModMenu.AddItem(vehicleWeapons);
-        vehicleModMenu.OnItemSelect += (sender, item, index) =>
-        {
-            if (item == vehicleWeapons)
-            {
-                VehicleFunctions.ToggleVehicleWeapons();
-            }
-        };
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         //Fix Vehicle Checkbox
@@ -124,6 +130,11 @@ partial class MainMenu : Script
             }
         };
 
+        #region Window Options
+        //Roll All Windows Up
+        UIMenuItem toggleRollUpWindows = new UIMenuItem("Roll Up All Windows");
+        vehicleWindowOptions.AddItem(toggleRollUpWindows);
+
         //Roll Down All windows
         UIMenuItem toggleRollDownWindows = new UIMenuItem("Roll Down All Windows");
         vehicleWindowOptions.AddItem(toggleRollDownWindows);
@@ -172,9 +183,22 @@ partial class MainMenu : Script
                     VehicleFunctions.FixWindow(window);
                 }
             };
+
+            vehicleWindowOptions.OnItemSelect += (sender, item, index) =>
+            {
+                if(item == toggleRollUpWindows)
+                {
+                    for(int i = 0; i <= 4; i++)
+                    {
+                        VehicleFunctions.RollWindowUp(window);
+                    }
+                }
+            };
         }
 
+        #endregion
 
+        #region Vehicle Doors
         Dictionary<int, string> doorIndex = new Dictionary<int, string>()
         {
             {0, "Front Driver Door" },
@@ -183,23 +207,28 @@ partial class MainMenu : Script
             {3, "Rear Passenger Door"},
             {4, "Hood"},
             {5, "Trunk"},
-            {6, "Trunk2"},
+            {6, "Extra1"},
+            {7, "Extra2"},
         };
 
-        UIMenuItem closeAllDoors = new UIMenuItem("Close All Doors");
+        UIMenuItem openAllDoors = new UIMenuItem("Open All Doors", "Open all vehicle doors.");
+        vehicleDoorOptions.AddItem(openAllDoors);
+
+        UIMenuItem closeAllDoors = new UIMenuItem("Close All Doors", "Close all vehicle doors.");
         vehicleDoorOptions.AddItem(closeAllDoors);
 
         foreach (KeyValuePair<int, string> door in doorIndex)
         {
-            UIMenu doorPos = modMenuPool.AddSubMenu(vehicleDoorOptions, door.Value);
-            UIMenuItem openDoor = new UIMenuItem("Open Door");
+            UIMenu doorPos = modMenuPool.AddSubMenu(vehicleDoorOptions, door.Value, "Open/Close Specified Door");
+            UIMenuItem openDoor = new UIMenuItem("Open Door", "Open Specified Door");
             doorPos.AddItem(openDoor);
-            UIMenuItem closeDoor = new UIMenuItem("Close Door");
+            UIMenuItem closeDoor = new UIMenuItem("Close Door", "Close Specified Door");
             doorPos.AddItem(closeDoor);
             
 
             doorPos.OnItemSelect += (sender, item, index) =>
             {
+
                 if (item == openDoor)
                 {
                     VehicleFunctions.VehOpenDoor(door);
@@ -217,26 +246,153 @@ partial class MainMenu : Script
                 {
                     VehicleFunctions.CloseAllDoors();
                 }
+
+                if (item == openAllDoors)
+                {
+                    for (int i = 0; i <= 8; i++)
+                    {
+                        Function.Call(Hash.SET_VEHICLE_DOOR_OPEN, veh.Handle, door.Key, false, false);
+                    }
+                }
+
             };
         }
 
+        UIMenuItem bombBayDoors = new UIMenuItem("Bomb Bay", "Open/close the bomb bay. Only available on some planes.");
+        vehicleDoorOptions.AddItem(bombBayDoors);
+        vehicleDoorOptions.OnItemSelect += (sender, item, index) =>
+        {
+            if (item == bombBayDoors && veh.HasBombBay)
+            {
+                VehicleFunctions.GetBombBayDoorStatus(veh);
+;
+            }
+        };
+
+        #endregion
+
+        #region Vehicle Lights
+            List<dynamic> lightTypes = new List<dynamic>()
+        {
+            "Hazard Lights",
+            "Left Indicator",
+            "Right Indicator",
+            "Interior Lights",
+            "Taxi Light", 
+            "Helicopter Spotlight",
+        };
+
         
+        //Light Type Dynamic List
+        UIMenuListItem vehLightType = new UIMenuListItem("Vehicle Lights", lightTypes, 0, "Turn vehicle lights on/off.");
+        vehicleOptions.OnItemSelect += (sender, item, index) =>
+        {
+            if (item == vehLightType)
+            {
+                if (Game.Player.Character.IsInVehicle() && veh.Exists())
+                {
+                    Vehicle veh = CommonFunctions.GetVehicle();
+                    int state = (int)VehicleFunctions.GetVehicleIndicatorLights(veh);
+                    int listIndex = vehLightType.Index;
+                    
+                    if (listIndex == 0)
+                    {
+                        if (state != 3) // either all lights are off, or one of the two (left/right) is off.
+                        {
+                            VehicleFunctions.LeftIndicatorLightOn_set(true); // left on
+                            VehicleFunctions.RightIndicatorLightOn_set(true); // right on
+                            
+                        }
+                        else  // both are on.
+                        {
+                            VehicleFunctions.LeftIndicatorLightOn_set(false); // left off
+                            VehicleFunctions.RightIndicatorLightOn_set(false); // right off
+                            
+                        }
+                    }
+                    else if (listIndex == 1)
+                    {
+                        if (state != 1) // Left indicator is (only) off
+                        {
+                            VehicleFunctions.LeftIndicatorLightOn_set(true); // left on
+                            VehicleFunctions.RightIndicatorLightOn_set(false); // right on
+                            
+                        }
+                        else
+                        {
+                            VehicleFunctions.LeftIndicatorLightOn_set(false); // left off
+                            VehicleFunctions.RightIndicatorLightOn_set(false); // right off
+                            
+                        }
+                    }
+                    else if (listIndex == 2)
+                    {
+                        if (state != 2) // Left indicator is (only) off
+                        {
+                            VehicleFunctions.LeftIndicatorLightOn_set(false); // left on
+                            VehicleFunctions.RightIndicatorLightOn_set(true); // right on
+                            
+                        }
+                        else
+                        {
+                            VehicleFunctions.LeftIndicatorLightOn_set(false); // left off
+                            VehicleFunctions.RightIndicatorLightOn_set(false); // right off
+                            
+                        }
+                    }
+                    else if (listIndex == 3) //Interior Light
+                    {
+                        VehicleFunctions.SetInteriorLights(veh);
+                    }
+                    else if (listIndex == 4) //Native Does not work
+                    {
+                        bool isTaxiLightOn = Function.Call<bool>(Hash.IS_TAXI_LIGHT_ON, veh);
+                        bool playerInTaxi = Function.Call<bool>(Hash.IS_PED_IN_ANY_TAXI, Game.Player.Character);
 
+                        if (playerInTaxi)
+                        {
+                            if (!isTaxiLightOn)
+                            {
+                                Function.Call(Hash.SET_TAXI_LIGHTS, veh, 1);
+                                DisplayMessage("Taxi ON" + " " + isTaxiLightOn);
+                            }
+                            else
+                            {
+                                Function.Call(Hash.SET_TAXI_LIGHTS, veh, 0);
+                                DisplayMessage("Taxi Off" + " " + !isTaxiLightOn);
+                            }
+                        }
+                    }
+                    else if (listIndex == 5) // helicopter spotlight
+                    {
+                        bool isSearchLightOn = Function.Call<bool>(Hash.IS_VEHICLE_SEARCHLIGHT_ON, veh);
+                        bool isPlayerInHeli = Game.Player.Character.IsInHeli;
 
+                        if (!isSearchLightOn && isPlayerInHeli == true)
+                        {
+                            Function.Call(Hash.SET_VEHICLE_SEARCHLIGHT, veh, !isSearchLightOn, true);
+                            DisplayMessage("Helicopter On");
+                        }
+                        else
+                        {
+                            Function.Call(Hash.SET_VEHICLE_SEARCHLIGHT, veh, !isSearchLightOn, false);
+                            DisplayMessage("Helicopter Off");
+                        }
+
+                    }
+                }
+            }
+        };
+        #endregion
 
         #region Set Dirt Level
-        List<dynamic> listOfDirtLevels = new List<dynamic>();
+        List<dynamic> listOfDirtLevels  = new List<dynamic>{"No Dirt", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
         Vehicle currentPedVehicle = Function.Call<Vehicle>(Hash.GET_VEHICLE_PED_IS_IN, Game.Player.Character, false);
 
-        float getDirtLevel = Function.Call<float>(Hash.GET_VEHICLE_DIRT_LEVEL, currentPedVehicle);
+        int getDirtLevel = Function.Call<int>(Hash.GET_VEHICLE_DIRT_LEVEL, currentPedVehicle);
         
-        for (float i = 0.0f; i <= 15.0; i += 1.0f)
-        {
-            listOfDirtLevels.Add(i);
-        }
-
-        UIMenuListItem dirtLevelyList = new UIMenuListItem("Dirt Level", listOfDirtLevels, 0);
+        UIMenuListItem dirtLevelyList = new UIMenuListItem("Dirt Level", listOfDirtLevels, getDirtLevel, "Select how much dirt should be visible on your vehicle, press ~r~enter~s~ " +"to apply the selected level.");
         vehicleOptions.AddItem(dirtLevelyList);
 
         vehicleOptions.OnListChange += (sender, listItem, index) =>
@@ -244,13 +400,12 @@ partial class MainMenu : Script
             if (listItem == dirtLevelyList)
             {
                 float listIndex = dirtLevelyList.Index;
-                float currentDirtLevel = listOfDirtLevels[index];
-                Function.Call(Hash.SET_VEHICLE_DIRT_LEVEL, currentPedVehicle, currentDirtLevel);
+                Function.Call(Hash.SET_VEHICLE_DIRT_LEVEL, currentPedVehicle, listIndex);
             }
         };
         #endregion
 
-        //Vehicle Weapons 
+        //Warp in Vehicle
         UIMenuItem warpInSpawnedCar = new UIMenuCheckboxItem("Warp In Spawned Car", false);
         vehicleOptions.AddItem(warpInSpawnedCar);
         vehicleOptions.OnCheckboxChange += (sender, item, checked_) =>

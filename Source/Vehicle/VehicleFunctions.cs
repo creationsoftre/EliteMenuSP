@@ -21,9 +21,16 @@ class VehicleFunctions : Script
     public static bool IsWarpInSpawnedVehicleEnabled { get; set; }
     public static bool IsVehicleAlwaysOnGroundEnabled { get; set; }
     public static bool IsEngineAlwaysEnabled { get; set; }
+    public static bool LeftIndicatorLightOn { get;  set; }
+    public static bool RightIndicatorLightOn { get; set; }
+    public static bool IsInteriorLightOn { get; set; }
+    public static bool IsSearchLightOn { get; set; }
+    public static bool IsBombBayOpen { get; set; }
+
+    public static Vehicle veh = CommonFunctions.GetVehicle();
+    public static Ped Player = Game.Player.Character;
 
 
-    
 
     public VehicleFunctions()
     {
@@ -89,7 +96,7 @@ class VehicleFunctions : Script
         {
             Game.Player.Character.CurrentVehicle.EngineRunning = true;
         }
-        
+
         if (IsVehicleWeaponsEnabled)
         {
             /*if (Game.Player.Character.IsInVehicle() && Game.IsKeyPressed(Keys.Add))
@@ -123,6 +130,29 @@ class VehicleFunctions : Script
                 Wait(150);
             }*/
         }
+
+        if(LeftIndicatorLightOn)
+        {
+            veh.LeftIndicatorLightOn = false;
+            
+        }
+
+        if(RightIndicatorLightOn)
+        {
+            veh.RightIndicatorLightOn = false;
+            
+        }
+
+        if(IsInteriorLightOn)
+        {
+            veh.InteriorLightOn = false;
+        }
+
+        if(IsBombBayOpen)
+        {
+            IsBombBayOpen = true;
+        }
+
     }
 
     internal static void SpawnVehicle(VehicleHash vehicle)
@@ -155,9 +185,9 @@ class VehicleFunctions : Script
     {
         if (Game.Player.Character.IsInVehicle())
         {
-            Game.Player.Character.CurrentVehicle.Repair();
-            Game.Player.Character.CurrentVehicle.Wash();
-            Game.Player.Character.CurrentVehicle.EngineRunning = true;
+            veh.Repair();
+            veh.Wash();
+            veh.EngineRunning = true;
 
             MainMenu.DisplayMessage("~g~Vehicle Fixed");
         } else
@@ -171,7 +201,7 @@ class VehicleFunctions : Script
         if (Game.Player.Character.IsInVehicle())
         {
 
-            Game.Player.Character.CurrentVehicle.Wash();
+            veh.Wash();
             
             MainMenu.DisplayMessage("~g~Vehicle Washed");
         }
@@ -206,29 +236,31 @@ class VehicleFunctions : Script
             vehicle = currentVehicle;
         else
             vehicle = prevVehicle;
-
-        if (value)
+        if(vehicle.Driver == Player && Player.IsInVehicle() && vehicle.Exists())
         {
-            Function.Call(Hash.SET_ENTITY_INVINCIBLE, vehicle, true);
-            Function.Call(Hash.SET_ENTITY_PROOFS, vehicle, 1, 1, 1, 1, 1, 1, 1, 1);
-            Function.Call(Hash.SET_VEHICLE_TYRES_CAN_BURST, vehicle, false);
-            Function.Call(Hash.SET_VEHICLE_WHEELS_CAN_BREAK, vehicle, false);
-            Function.Call(Hash.SET_VEHICLE_CAN_BE_VISIBLY_DAMAGED, vehicle, false);
-            foreach (VehicleDoor door in Enum.GetValues(typeof(VehicleDoor)))
+            if (value)
             {
-                vehicle.SetDoorBreakable(door, false);
+                Function.Call(Hash.SET_ENTITY_INVINCIBLE, vehicle, true);
+                Function.Call(Hash.SET_ENTITY_PROOFS, vehicle, 1, 1, 1, 1, 1, 1, 1, 1);
+                Function.Call(Hash.SET_VEHICLE_TYRES_CAN_BURST, vehicle, false);
+                Function.Call(Hash.SET_VEHICLE_WHEELS_CAN_BREAK, vehicle, false);
+                Function.Call(Hash.SET_VEHICLE_CAN_BE_VISIBLY_DAMAGED, vehicle, false);
+                foreach (VehicleDoor door in Enum.GetValues(typeof(VehicleDoor)))
+                {
+                    veh.SetDoorBreakable(door, false);
+                }
             }
-        }
-        else
-        {
-            Function.Call(Hash.SET_ENTITY_INVINCIBLE, vehicle, false);
-            Function.Call(Hash.SET_ENTITY_PROOFS, vehicle, 0, 0, 0, 0, 0, 0, 0, 0);
-            Function.Call(Hash.SET_VEHICLE_TYRES_CAN_BURST, vehicle, true);
-            Function.Call(Hash.SET_VEHICLE_WHEELS_CAN_BREAK, vehicle, true);
-            Function.Call(Hash.SET_VEHICLE_CAN_BE_VISIBLY_DAMAGED, vehicle, true);
-            foreach (VehicleDoor door in Enum.GetValues(typeof(VehicleDoor)))
+            else
             {
-                vehicle.SetDoorBreakable(door, true);
+                Function.Call(Hash.SET_ENTITY_INVINCIBLE, vehicle, false);
+                Function.Call(Hash.SET_ENTITY_PROOFS, vehicle, 0, 0, 0, 0, 0, 0, 0, 0);
+                Function.Call(Hash.SET_VEHICLE_TYRES_CAN_BURST, vehicle, true);
+                Function.Call(Hash.SET_VEHICLE_WHEELS_CAN_BREAK, vehicle, true);
+                Function.Call(Hash.SET_VEHICLE_CAN_BE_VISIBLY_DAMAGED, vehicle, true);
+                foreach (VehicleDoor door in Enum.GetValues(typeof(VehicleDoor)))
+                {
+                    veh.SetDoorBreakable(door, true);
+                }
             }
         }
     }
@@ -247,39 +279,38 @@ class VehicleFunctions : Script
 
     internal static void ToggleLockDoors()
     {
-         Vehicle lastPedVehicle = Game.Player.LastVehicle;
 
-         int vehDoorLockStatus = Function.Call<int>(Hash.GET_VEHICLE_DOOR_LOCK_STATUS, lastPedVehicle);
+         int vehDoorLockStatus = Function.Call<int>(Hash.GET_VEHICLE_DOOR_LOCK_STATUS, veh);
 
-         if (lastPedVehicle.Exists() && vehDoorLockStatus == 1)
+         if (veh.Exists() && vehDoorLockStatus == 1)
          {
 
-            Function.Call(Hash.SET_VEHICLE_DOORS_LOCKED, lastPedVehicle, 2);
+            Function.Call(Hash.SET_VEHICLE_DOORS_LOCKED, veh, 2);
             MainMenu.DisplayMessage("Vehicle is Locked");
 
-         } else if (lastPedVehicle.Exists() && vehDoorLockStatus == 2)
+         } else if (veh.Exists() && vehDoorLockStatus == 2)
          {
-            Function.Call(Hash.SET_VEHICLE_DOORS_LOCKED, lastPedVehicle, 1);
+            Function.Call(Hash.SET_VEHICLE_DOORS_LOCKED, veh, 1);
             MainMenu.DisplayMessage("Vehicle is Unocked");
         }
     }
 
     internal static void ToggleChildLock()
     {
-        Vehicle lastPedVehicle = Game.Player.LastVehicle;
+        
         Ped Player = Game.Player.Character;
-        int vehChildLockStatus = Function.Call<int>(Hash.GET_VEHICLE_DOOR_LOCK_STATUS, lastPedVehicle);
+        int vehChildLockStatus = Function.Call<int>(Hash.GET_VEHICLE_DOOR_LOCK_STATUS, veh);
 
-        if (lastPedVehicle.Exists() && vehChildLockStatus == 1 && Player.IsInVehicle())
+        if (veh.Exists() && vehChildLockStatus == 1 && Player.IsInVehicle())
         {
 
-            Function.Call(Hash.SET_VEHICLE_DOORS_LOCKED, lastPedVehicle, 4);
+            Function.Call(Hash.SET_VEHICLE_DOORS_LOCKED, veh, 4);
             MainMenu.DisplayMessage("Child Lock Enabled");
 
         }
-        else if (lastPedVehicle.Exists() && vehChildLockStatus == 4 && Player.IsInVehicle())
+        else if (veh.Exists() && vehChildLockStatus == 4 && Player.IsInVehicle())
         {
-            Function.Call(Hash.SET_VEHICLE_DOORS_LOCKED, lastPedVehicle, 1);
+            Function.Call(Hash.SET_VEHICLE_DOORS_LOCKED, veh, 1);
             MainMenu.DisplayMessage("Child Lock disabled");
         }
     }
@@ -290,7 +321,7 @@ class VehicleFunctions : Script
 
         if (!IsLockedDoorsEnabled)
         {
-            Vehicle lastPedVehicle = Game.Player.LastVehicle;
+            
             Game.Player.Character.CanBeDraggedOutOfVehicle = true;
 
         }
@@ -342,31 +373,30 @@ class VehicleFunctions : Script
     {
         Ped Player = Game.Player.Character;
 
-        Vehicle lastPedVehicle = Game.Player.LastVehicle;
-        if(Player.IsInVehicle() && Player.CurrentVehicle.IsUpsideDown)
+        if(Player.IsInVehicle() && veh.IsUpsideDown)
         {
-            lastPedVehicle.PlaceOnGround();
+            veh.PlaceOnGround();
             MainMenu.DisplayMessage("Vehicle Succesfully Flipped");
         }
     }
 
     internal static void toggleVehicleAlarm()
     {
-        Vehicle lastPedVehicle = Game.Player.LastVehicle;
         Ped Player = Game.Player.Character;
+        bool isVehAlarmActive = Function.Call<bool>(Hash.IS_VEHICLE_ALARM_ACTIVATED, veh);
 
-        bool isVehAlarmActive = Function.Call<bool>(Hash.IS_VEHICLE_ALARM_ACTIVATED, lastPedVehicle);
         
-        if (lastPedVehicle.Exists() && isVehAlarmActive == false && !Player.IsInVehicle())
+        
+        if (veh.Exists() && isVehAlarmActive == false && !Player.IsInVehicle())
         {
-            Function.Call(Hash.SET_VEHICLE_ALARM, lastPedVehicle, true);
-            Function.Call(Hash.START_VEHICLE_ALARM, lastPedVehicle);
+            Function.Call(Hash.SET_VEHICLE_ALARM, veh, true);
+            Function.Call(Hash.START_VEHICLE_ALARM, veh);
             MainMenu.DisplayMessage("Vehicle Alarm Active");
         }
-        else if (lastPedVehicle.Exists() && isVehAlarmActive == true )
+        else if (veh.Exists() && isVehAlarmActive == true )
         {
-            Function.Call(Hash.SET_VEHICLE_ALARM, lastPedVehicle, false);
-            Function.Call(Hash.START_VEHICLE_ALARM, lastPedVehicle);
+            Function.Call(Hash.SET_VEHICLE_ALARM, veh, false);
+            Function.Call(Hash.START_VEHICLE_ALARM, veh);
             MainMenu.DisplayMessage("Vehicle Alarm Deactivated");
         }
             
@@ -374,49 +404,45 @@ class VehicleFunctions : Script
 
     internal static void RollAllWindowDown()
     {
-        Vehicle lastPedVehicle = Game.Player.LastVehicle;
-        if (lastPedVehicle.Exists())
+        if (veh.Exists())
         {
-            Function.Call(Hash.ROLL_DOWN_WINDOWS, lastPedVehicle);
+            Function.Call(Hash.ROLL_DOWN_WINDOWS, veh);
         }
     }
 
     internal static void RollWindowDown(KeyValuePair<int,string> window)
     {
-        Vehicle lastPedVehicle = Game.Player.LastVehicle;
-        if (lastPedVehicle.Exists())
+        if (veh.Exists())
         {
-            Function.Call(Hash.ROLL_DOWN_WINDOW, lastPedVehicle, window.Key);
+            Function.Call(Hash.ROLL_DOWN_WINDOW, veh, window.Key);
         }
     }
 
     internal static void RollWindowUp(KeyValuePair<int, string> window)
     {
-        Vehicle lastPedVehicle = Game.Player.LastVehicle;
-        if (lastPedVehicle.Exists())
+        if (veh.Exists())
         {
-            Function.Call(Hash.ROLL_UP_WINDOW, lastPedVehicle, window.Key);
+            Function.Call(Hash.ROLL_UP_WINDOW, veh, window.Key);
         }
     }
 
     internal static void FixWindow(KeyValuePair<int, string> window)
     {
-        Vehicle lastPedVehicle = Game.Player.LastVehicle;
-        if (lastPedVehicle.Exists())
+        if (veh.Exists())
         {
-            Function.Call(Hash.FIX_VEHICLE_WINDOW, lastPedVehicle, window.Key);
+            Function.Call(Hash.FIX_VEHICLE_WINDOW, veh, window.Key);
             MainMenu.DisplayMessage("Window Has Been Fixed");
         }
     }
 
     internal static void VehOpenDoor(KeyValuePair<int, string> door)
     {
-        Vehicle lastPedVehicle = Game.Player.LastVehicle;
-        bool isDoorFullyOpen = Function.Call<bool>(Hash.IS_VEHICLE_DOOR_FULLY_OPEN, lastPedVehicle, door.Key);
         
-        if (lastPedVehicle.Exists() && !isDoorFullyOpen || Game.Player.Character.IsInVehicle())
+        bool isDoorFullyOpen = Function.Call<bool>(Hash.IS_VEHICLE_DOOR_FULLY_OPEN, veh, door.Key);
+        
+        if (veh.Exists() && !isDoorFullyOpen || Game.Player.Character.IsInVehicle())
         {
-            Function.Call(Hash.SET_VEHICLE_DOOR_OPEN, lastPedVehicle, door.Key, false, true);
+            Function.Call(Hash.SET_VEHICLE_DOOR_OPEN, veh.Handle, door.Key, false, false);
             MainMenu.DisplayMessage("Door Has Been Opened");
 
         }
@@ -424,47 +450,51 @@ class VehicleFunctions : Script
 
     internal static void VehCloseDoor(KeyValuePair<int, string> door)
     {
-        Vehicle lastPedVehicle = Game.Player.LastVehicle;
-        bool isDoorFullyOpen = Function.Call<bool>(Hash.IS_VEHICLE_DOOR_FULLY_OPEN, lastPedVehicle, door.Key);
+        
+        bool isDoorFullyOpen = Function.Call<bool>(Hash.IS_VEHICLE_DOOR_FULLY_OPEN, veh, door.Key);
 
-        if (lastPedVehicle.Exists() && !isDoorFullyOpen)
+        if (veh.Exists() && !isDoorFullyOpen)
         {
-            Function.Call(Hash.SET_VEHICLE_DOOR_SHUT, lastPedVehicle, door.Key, true);
+            Function.Call(Hash.SET_VEHICLE_DOOR_SHUT, veh.Handle, door.Key, false, false);
             MainMenu.DisplayMessage("Door Has Been Closed");
         }
     }
 
     internal static void CloseAllDoors()
     {
-        Vehicle lastPedVehicle = Game.Player.LastVehicle;
 
-        if (lastPedVehicle.Exists())
+        if (veh.Exists())
         {
-            Function.Call(Hash.SET_VEHICLE_DOORS_SHUT, lastPedVehicle, true);
+            Function.Call(Hash.SET_VEHICLE_DOORS_SHUT, veh.Handle, false, false);
             MainMenu.DisplayMessage("All Doors Have Been Shut");
         }
     }
 
+
     internal static void ToggleVehicleInvisible()
     {
         Ped Player = Game.Player.Character;
-        Vehicle lastPedVehicle = Game.Player.LastVehicle;
+        
 
         bool isPlayerVisible = true;
 
         if (Player.IsInVehicle() && Player.IsVisible)
         {
-            lastPedVehicle.IsVisible = !lastPedVehicle.IsVisible;
+            veh.IsVisible = !veh.IsVisible;
             Player.IsVisible = isPlayerVisible;      
        
         }
         else 
         {
-            lastPedVehicle.IsVisible = !lastPedVehicle.IsVisible; //car invisible
+            veh.IsVisible = !veh.IsVisible; //car invisible
             Player.IsVisible = isPlayerVisible;
         }
     }
 
+    internal static void SetPlateStyle(int plateNumber)
+    {
+        Function.Call(Hash.SET_VEHICLE_NUMBER_PLATE_TEXT_INDEX, veh, plateNumber);
+    }
 
     #region Vehicle Weapons
     public static Dictionary<string, string> VehicleWeaponAssetsDict = new Dictionary<string, string>()
@@ -486,4 +516,67 @@ class VehicleFunctions : Script
         return weaponAsset;
     }*/
     #endregion
+
+
+    public static int? GetVehicleIndicatorLights(Vehicle vehicle)
+    {
+        LeftIndicatorLightOn = !LeftIndicatorLightOn;
+        RightIndicatorLightOn = !RightIndicatorLightOn;
+
+        if (LeftIndicatorLightOn == false && RightIndicatorLightOn == false)
+        {
+            return 0; // none
+        }
+        else if (LeftIndicatorLightOn == true && RightIndicatorLightOn == false)
+        {
+            return 1; //left 
+        }
+        else if (LeftIndicatorLightOn == false && RightIndicatorLightOn == true)
+        {
+            return 2; // Right
+        }
+        else if (LeftIndicatorLightOn == true && RightIndicatorLightOn == true)
+        {
+            
+            return 3; // Both
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public static void LeftIndicatorLightOn_set(bool value)
+    {
+        Vehicle veh = CommonFunctions.GetVehicle();
+        Function.Call(Hash.SET_VEHICLE_INDICATOR_LIGHTS, veh.Handle, 1, value); // left on
+    }
+
+    public static void RightIndicatorLightOn_set(bool value)
+    {
+        Vehicle veh = CommonFunctions.GetVehicle();
+        Function.Call(Hash.SET_VEHICLE_INDICATOR_LIGHTS, veh.Handle, 0, value); // Right on
+    }
+
+    public static void SetInteriorLights(Vehicle vehicle)
+    {
+        IsInteriorLightOn = !IsInteriorLightOn;
+        Function.Call(Hash.SET_VEHICLE_INTERIORLIGHT, vehicle, !IsInteriorLightOn);
+    }
+
+    public static void GetBombBayDoorStatus(Vehicle vehicle)
+    {
+        IsBombBayOpen = !IsBombBayOpen;
+
+        if (!IsBombBayOpen)
+        {
+            veh.OpenBombBay();
+
+        } else 
+        {
+            veh.CloseBombBay();
+            
+        }
+    }
+
 }

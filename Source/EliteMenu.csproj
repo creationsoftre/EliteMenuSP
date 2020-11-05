@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommonFunctions.cs" />
     <Compile Include="Data\VehicleData.cs" />
     <Compile Include="Elite.cs" />
     <Compile Include="MainMenu.cs" />
